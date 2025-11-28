@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor Sistemas Numéricos</title>
+    
+    <!-- Tailwind CSS (Estilos utilitarios) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React y ReactDOM (Motor de la aplicación) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (Para que el navegador entienda React) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Fuente Montserrat (Esencial para tu estilo Dark Tech) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+    <!-- ESTILOS PERSONALIZADOS: DARK TECH + MONTSERRAT -->
+    <style>
+        :root {
+            /* Paleta extraída de tu CSS maestro */
+            --fondo-pagina: #0f172a;       /* Slate 900 */
+            --fondo-tarjeta: #1e293b;      /* Slate 800 */
+            --texto-principal: #f8fafc;
+            
+            /* El Degradado "Marca de la Casa" */
+            --gradiente-titulo: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #d946ef 100%);
+            
+            /* Acentos Flúor */
+            --color-fluor: #22d3ee;        /* Cian eléctrico */
+            
+            /* Formas */
+            --radio: 20px;
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            color: var(--texto-principal);
+            margin: 0;
+            min-height: 100vh;
+            
+            /* FONDO FUTURISTA / SCI-FI */
+            /* Capa 1: Filtro oscuro para legibilidad (Slate 900 con transparencia) */
+            /* Capa 2: Imagen de fondo temática */
+            background-image: 
+                linear-gradient(to bottom, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.88)),
+                url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Efecto Parallax simple */
+            background-repeat: no-repeat;
+        }
+
+        /* Título con tu degradado específico */
+        .titulo-maestro {
+            background: var(--gradiente-titulo);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 900;
+            letter-spacing: -1px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); /* Sombra para resaltar sobre fondo */
+        }
+
+        /* Inputs estilo consola */
+        .tech-input {
+            background: rgba(15, 23, 42, 0.7); 
+            border: 1px solid #334155;
+            color: var(--texto-principal);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+        .tech-input:focus {
+            border-color: var(--color-fluor);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+            outline: none;
+        }
+
+        /* Tarjeta principal */
+        .tech-card {
+            background-color: rgba(30, 41, 59, 0.95); /* Slate 800 semi-transparente */
+            border-radius: var(--radio);
+            border: 1px solid #334155;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            backdrop-filter: blur(10px); /* Efecto cristal esmerilado */
+        }
+
+        /* Botones */
+        .tech-btn {
+            background: transparent;
+            color: var(--color-fluor);
+            border: 2px solid var(--color-fluor);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .tech-btn:hover {
+            background-color: var(--color-fluor);
+            color: var(--fondo-pagina);
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Selectores */
+        select option {
+            background-color: var(--fondo-pagina);
+            color: var(--texto-principal);
+        }
+
+        /* Animación de entrada */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- ICONOS SVG ---
+        const FluorColor = "#22d3ee"; 
+        
+        const Calculator = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: FluorColor}} className="w-8 h-8"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
+        const ArrowRightLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>;
+        const ChevronDown = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute right-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none"><path d="m6 9 6 6 6-6"/></svg>;
+        const ListIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: FluorColor}} className="w-5 h-5"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
+        const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M18 6 6 18"/><path d="m6 6 18 18"/></svg>;
+        const BookOpen = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const ArrowRightSimple = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-slate-500"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
+        const ArrowRightMobile = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-slate-500 rotate-90"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
+
+
+        function App() {
+            const systems = [
+                { id: 'dec', name: 'Decimal', base: 10, pattern: /^[0-9]*$/, placeholder: 'Ej: 42' },
+                { id: 'bin', name: 'Binario', base: 2, pattern: /^[0-1]*$/, placeholder: 'Ej: 101010' },
+                { id: 'oct', name: 'Octal', base: 8, pattern: /^[0-7]*$/, placeholder: 'Ej: 52' },
+                { id: 'hex', name: 'Hexadecimal', base: 16, pattern: /^[0-9A-Fa-f]*$/, placeholder: 'Ej: 2A' },
+            ];
+
+            const [sourceBase, setSourceBase] = useState(10);
+            const [targetBase, setTargetBase] = useState(2);
+            const [inputValue, setInputValue] = useState('');
+            const [decimalValue, setDecimalValue] = useState(null);
+            const [error, setError] = useState(null);
+            const [showSteps, setShowSteps] = useState(false);
+
+            const handleInputChange = (e) => {
+                const val = e.target.value;
+                setInputValue(val);
+                setError(null);
+                setShowSteps(false);
+
+                if (val === '') {
+                    setDecimalValue(null);
+                    return;
+                }
+
+                const currentSystem = systems.find(s => s.base === sourceBase);
+                if (!currentSystem.pattern.test(val)) {
+                    setError(`Caracter inválido para ${currentSystem.name}`);
+                    setDecimalValue(null);
+                    return;
+                }
+
+                try {
+                    const dec = parseInt(val, sourceBase);
+                    if (isNaN(dec)) {
+                        setDecimalValue(null);
+                    } else {
+                        setDecimalValue(dec);
+                    }
+                } catch (err) {
+                    setDecimalValue(null);
+                }
+            };
+
+            const handleSwap = () => {
+                const tempBase = sourceBase;
+                const tempVal = decimalValue;
+                setSourceBase(targetBase);
+                setTargetBase(tempBase);
+                if (tempVal !== null) {
+                    setInputValue(tempVal.toString(targetBase).toUpperCase());
+                } else {
+                    setInputValue('');
+                }
+                setError(null);
+                setShowSteps(false);
+            };
+
+            const outputValue = decimalValue !== null 
+                ? decimalValue.toString(targetBase).toUpperCase() 
+                : '';
+
+            // --- LÓGICA DE PASOS ---
+            const renderDecToAnySteps = (decVal, base) => {
+                let steps = [];
+                let current = decVal;
+                if (decVal === 0) return [{ div: 0, quot: 0, rem: 0 }];
+                while (current > 0) {
+                    const remainder = current % base;
+                    const quotient = Math.floor(current / base);
+                    steps.push({ div: current, quot: quotient, rem: remainder });
+                    current = quotient;
+                }
+                return (
+                    <div className="mt-2 space-y-2 font-mono text-sm">
+                        <p className="text-slate-400 font-sans mb-2">Método: Divisiones sucesivas entre {base}.</p>
+                        <div className="bg-[#0f172a] p-4 rounded-xl border border-slate-700">
+                        {steps.map((step, idx) => (
+                            <div key={idx} className="flex items-center gap-2 mb-1 last:mb-0">
+                                <span className="text-white w-12 text-right">{step.div}</span>
+                                <span className="text-slate-500">÷</span>
+                                <span style={{color: FluorColor}} className="w-4 text-center font-bold">{base}</span>
+                                <span className="text-slate-500">=</span>
+                                <span className="text-white w-12">{step.quot}</span>
+                                <span className="text-slate-500 text-xs ml-2">Resto:</span>
+                                <span style={{color: FluorColor}} className="font-bold ml-1">
+                                    {step.rem < 10 ? step.rem : step.rem.toString(16).toUpperCase()}
+                                </span>
+                            </div>
+                        ))}
+                        </div>
+                        <p className="text-xs text-slate-400 mt-3">
+                            Resultado (restos de abajo a arriba): <span style={{color: FluorColor}} className="font-bold text-lg align-middle ml-1">{decVal.toString(base).toUpperCase()}</span>
+                        </p>
+                    </div>
+                );
+            };
+
+            const renderAnyToDecSteps = (valStr, base) => {
+                const digits = valStr.toUpperCase().split('').reverse();
+                return (
+                    <div className="mt-2 space-y-2 font-mono text-sm">
+                        <p className="text-slate-400 font-sans mb-2">Método: Suma de potencias de {base}.</p>
+                        <div className="bg-[#0f172a] p-4 rounded-xl border border-slate-700 overflow-x-auto">
+                        {digits.map((digit, idx) => {
+                            const digitVal = parseInt(digit, base);
+                            const powerVal = Math.pow(base, idx);
+                            const result = digitVal * powerVal;
+                            return (
+                                <div key={idx} className="flex items-center gap-2 mb-1 whitespace-nowrap">
+                                    <span style={{color: FluorColor}} className="font-bold">{digit}</span>
+                                    <span className="text-slate-500">×</span>
+                                    <span className="text-white">{base}<sup>{idx}</sup></span>
+                                    <span className="text-slate-500">=</span>
+                                    <span className="text-slate-400">{digitVal} × {powerVal}</span>
+                                    <span className="text-slate-500">=</span>
+                                    <span className="text-white font-bold ml-auto">{result}</span>
+                                </div>
+                            );
+                        })}
+                        <div className="border-t border-slate-700 mt-3 pt-3 flex justify-between items-center">
+                            <span className="text-slate-400">Suma Total:</span>
+                            <span style={{color: FluorColor}} className="font-bold text-xl">{parseInt(valStr, base)}</span>
+                        </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const footerHtml = `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: #94a3b8; font-size: 0.8rem;">
+                <div>
+                    <a href="https://ejemplo.com" style="color: ${FluorColor}; text-decoration: none; font-weight: 600;">
+                    Sistemas de numeración
+                    </a>
+                    © 2025 de 
+                    <a href="https://ejemplo.com" style="color: ${FluorColor}; text-decoration: none; font-weight: 600;">
+                    Luis Solá Mantilla
+                    </a>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                     tiene licencia 
+                    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: ${FluorColor}; text-decoration: none; display: inline-flex; align-items: center;">
+                    CC BY-NC-SA 4.0
+                    </a>
+                    <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+                    <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+                    <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+                    <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+                </div>
+                </div>
+            `;
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-start py-12 px-4">
+                
+                {/* Header */}
+                <div className="w-full max-w-3xl mb-10 text-center">
+                    <div className="inline-flex items-center justify-center p-4 mb-6 rounded-full bg-[#1e293b] border border-slate-700 shadow-lg">
+                        <Calculator />
+                    </div>
+                    {/* TÍTULO MAESTRO: Dark Tech Gradient */}
+                    <h1 className="titulo-maestro text-4xl md:text-5xl mb-4">
+                        Conversor Sistemas Numéricos
+                    </h1>
+                </div>
+
+                {/* Main Card */}
+                <div className="w-full max-w-3xl tech-card p-8 md:p-10 relative overflow-hidden">
+                    
+                    {/* Borde superior decorativo */}
+                    <div className="absolute top-0 left-0 w-full h-1" style={{background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #d946ef 100%)', opacity: 0.7}}></div>
+
+                    {/* SELECTORES */}
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+                        <div className="w-full relative group">
+                            <label style={{color: FluorColor}} className="text-xs font-bold uppercase tracking-wider mb-2 block">De (Origen)</label>
+                            <div className="relative">
+                                <select 
+                                    value={sourceBase}
+                                    onChange={(e) => {
+                                        setSourceBase(Number(e.target.value));
+                                        setInputValue('');
+                                        setDecimalValue(null);
+                                        setError(null);
+                                        setShowSteps(false);
+                                    }}
+                                    className="w-full appearance-none bg-[#0f172a] border border-slate-700 rounded-xl p-4 text-white font-semibold cursor-pointer focus:border-[color:var(--color-fluor)] focus:outline-none shadow-sm transition-colors hover:border-slate-500"
+                                >
+                                    {systems.map(s => <option key={s.id} value={s.base}>{s.name}</option>)}
+                                </select>
+                                <ChevronDown />
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={handleSwap}
+                            className="p-4 rounded-full bg-[#0f172a] border border-slate-700 hover:border-[color:var(--color-fluor)] text-slate-400 transition-all mt-6 md:mt-0 shadow-lg group hover:scale-110"
+                            style={{'--color-fluor': FluorColor}}
+                            title="Intercambiar origen y destino"
+                        >
+                            <ArrowRightLeft className="group-hover:text-[color:var(--color-fluor)]" />
+                        </button>
+
+                        <div className="w-full relative">
+                            <label style={{color: FluorColor}} className="text-xs font-bold uppercase tracking-wider mb-2 block">A (Destino)</label>
+                            <div className="relative">
+                                <select 
+                                    value={targetBase}
+                                    onChange={(e) => {
+                                        setTargetBase(Number(e.target.value));
+                                        setShowSteps(false);
+                                    }}
+                                    className="w-full appearance-none bg-[#0f172a] border border-slate-700 rounded-xl p-4 text-white font-semibold cursor-pointer focus:border-[color:var(--color-fluor)] focus:outline-none shadow-sm transition-colors hover:border-slate-500"
+                                >
+                                    {systems.map(s => <option key={s.id} value={s.base}>{s.name}</option>)}
+                                </select>
+                                <ChevronDown />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* INPUTS */}
+                    <div className="grid md:grid-cols-2 gap-8 items-start relative mb-8">
+                        <div className="relative">
+                            <div className="flex justify-between mb-2 px-1">
+                                <span className="text-slate-400 text-sm font-medium">Entrada</span>
+                                <span className="text-slate-500 text-xs font-mono bg-[#0f172a] px-2 py-0.5 rounded-md border border-slate-800">Base {sourceBase}</span>
+                            </div>
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={handleInputChange}
+                                placeholder={systems.find(s=>s.base===sourceBase).placeholder}
+                                className={`tech-input w-full rounded-xl px-5 py-5 text-2xl font-mono placeholder-slate-600 ${error ? 'border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : ''}`}
+                            />
+                            {error && <p className="text-red-400 text-xs mt-2 absolute -bottom-6 left-0 font-semibold flex items-center gap-1">⚠️ {error}</p>}
+                        </div>
+
+                        <div className="relative">
+                            <div className="flex justify-between mb-2 px-1">
+                                <span className="text-slate-400 text-sm font-medium">Resultado</span>
+                                <span className="text-slate-500 text-xs font-mono bg-[#0f172a] px-2 py-0.5 rounded-md border border-slate-800">Base {targetBase}</span>
+                            </div>
+                            <div style={{color: FluorColor}} className="bg-[#0f172a]/50 border border-slate-700 w-full rounded-xl px-5 py-5 text-2xl font-mono min-h-[74px] flex items-center select-all shadow-inner">
+                                {outputValue || <span className="text-slate-700 select-none">...</span>}
+                            </div>
+                        </div>
+                        
+                        <div className="md:hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center">
+                             <ArrowRightMobile />
+                        </div>
+                    </div>
+
+                    {/* BOTÓN DE PASOS */}
+                    <div className="flex flex-col items-center gap-4">
+                        {decimalValue !== null && (
+                            <button
+                                onClick={() => setShowSteps(!showSteps)}
+                                className="tech-btn rounded-full px-8 py-3 flex items-center gap-3 text-sm"
+                            >
+                                {showSteps ? <XIcon /> : <BookOpen />}
+                                {showSteps ? 'Ocultar Pasos' : 'Ver Pasos del Cálculo'}
+                            </button>
+                        )}
+                    </div>
+
+                    {/* VISUALIZACIÓN DE PASOS */}
+                    {showSteps && decimalValue !== null && (
+                        <div className="mt-10 pt-10 border-t border-slate-700 animate-slide-in">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                                <ListIcon />
+                                Proceso Detallado
+                            </h3>
+
+                            {sourceBase === 10 && targetBase !== 10 && (
+                                <div className="bg-[#0f172a] p-6 rounded-2xl border border-slate-700 shadow-sm">
+                                    <h4 style={{color: FluorColor}} className="font-bold mb-4 text-lg">Convertir Decimal a {systems.find(s=>s.base===targetBase).name}</h4>
+                                    {renderDecToAnySteps(decimalValue, targetBase)}
+                                </div>
+                            )}
+
+                            {sourceBase !== 10 && targetBase === 10 && (
+                                <div className="bg-[#0f172a] p-6 rounded-2xl border border-slate-700 shadow-sm">
+                                    <h4 style={{color: FluorColor}} className="font-bold mb-4 text-lg">Convertir {systems.find(s=>s.base===sourceBase).name} a Decimal</h4>
+                                    {renderAnyToDecSteps(inputValue, sourceBase)}
+                                </div>
+                            )}
+
+                            {sourceBase !== 10 && targetBase !== 10 && sourceBase !== targetBase && (
+                                <div className="space-y-8">
+                                    <div className="bg-[#0f172a] p-6 rounded-2xl border border-slate-700 shadow-sm relative">
+                                        <div className="absolute -top-3 left-6">
+                                            <span style={{backgroundColor: FluorColor}} className="text-slate-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-cyan-500/20">Paso 1</span>
+                                        </div>
+                                        <h4 className="text-white font-bold mt-2">A Decimal</h4>
+                                        {renderAnyToDecSteps(inputValue, sourceBase)}
+                                    </div>
+
+                                    <div className="flex justify-center">
+                                        <ArrowRightSimple />
+                                    </div>
+
+                                    <div className="bg-[#0f172a] p-6 rounded-2xl border border-slate-700 shadow-sm relative">
+                                        <div className="absolute -top-3 left-6">
+                                            <span style={{backgroundColor: FluorColor}} className="text-slate-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-cyan-500/20">Paso 2</span>
+                                        </div>
+                                        <h4 className="text-white font-bold mt-2">De Decimal a {systems.find(s=>s.base===targetBase).name}</h4>
+                                        {renderDecToAnySteps(decimalValue, targetBase)}
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {sourceBase === targetBase && (
+                                <div className="text-center text-slate-500 py-6 italic border border-dashed border-slate-700 rounded-xl">
+                                    ¡El sistema de origen y destino es el mismo!
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="mt-16 w-full text-center border-t border-slate-800 pt-8 opacity-70 hover:opacity-100 transition-opacity">
+                    <div dangerouslySetInnerHTML={{ __html: footerHtml }} />
+                </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
